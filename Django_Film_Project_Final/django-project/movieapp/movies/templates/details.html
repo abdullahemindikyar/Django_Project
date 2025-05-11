@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg">
+                <img src="{% static 'img/'|add:movie.resim %}" class="card-img-top rounded" alt="{{ movie.film_adi }}">
+                {% if movie.anasayfa %}
+                <div class="position-absolute top-0 end-0 m-3">
+                    <span class="badge bg-danger p-2">
+                        <i class="fas fa-fire me-1"></i> Popüler
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg bg-secondary">
+                <div class="card-body p-4">
+                    <h1 class="card-title text-danger mb-4">{{ movie.film_adi }}</h1>
+                    <p class="card-text text-light mb-4">{{ movie.aciklama }}</p>
+                    
+                    {% if user.is_authenticated %}
+                    <div class="d-flex gap-3 mb-4">
+                        <button type="button" 
+                                class="btn {% if is_liked %}btn-success{% else %}btn-outline-success{% endif %} flex-grow-1" 
+                                onclick="toggleLike({{ movie.id }})"
+                                id="likeBtn">
+                            <i class="fas fa-thumbs-up me-2"></i>
+                            {% if is_liked %}Beğendim{% else %}Beğen{% endif %}
+                        </button>
+                        <button type="button" 
+                                class="btn {% if is_disliked %}btn-danger{% else %}btn-outline-danger{% endif %} flex-grow-1" 
+                                onclick="toggleDislike({{ movie.id }})"
+                                id="dislikeBtn">
+                            <i class="fas fa-thumbs-down me-2"></i>
+                            {% if is_disliked %}Beğenmedim{% else %}Beğenme{% endif %}
+                        </button>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'movies:movie_list' %}" class="btn btn-primary flex-grow-1">
+                            <i class="fas fa-arrow-left me-2"></i> Geri Dön
+                        </a>
+                        {% if user.is_authenticated %}
+                        <button onclick="toggleFavorite({{ movie.id }})" 
+                                class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %} flex-grow-1"
+                                id="favoriteBtn">
+                            <i class="fas fa-star me-2"></i>
+                            {% if is_favorite %}Favorilerden Çıkar{% else %}Favorilere Ekle{% endif %}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<script>
+function toggleLike(movieId) {
+    fetch(`/movies/movie/${movieId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        const likeBtn = document.getElementById('likeBtn');
+        const dislikeBtn = document.getElementById('dislikeBtn');
+        
+        if (data.is_liked) {
+            likeBtn.classList.remove('btn-outline-success');
+            likeBtn.classList.add('btn-success');
+            likeBtn.innerHTML = '<i class="fas fa-thumbs-up me-2"></i>Beğendim';
+            dislikeBtn.classList.remove('btn-danger');
+            dislikeBtn.classList.add('btn-outline-danger');
+            dislikeBtn.innerHTML = '<i class="fas fa-thumbs-down me-2"></i>Beğenme';
+        } else {
+            likeBtn.classList.remove('btn-success');
+            likeBtn.classList.add('btn-outline-success');
+            likeBtn.innerHTML = '<i class="fas fa-thumbs-up me-2"></i>Beğen';
+        }
+    });
+}
+
+function toggleDislike(movieId) {
+    fetch(`/movies/movie/${movieId}/dislike/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        const likeBtn = document.getElementById('likeBtn');
+        const dislikeBtn = document.getElementById('dislikeBtn');
+        
+        if (data.is_disliked) {
+            dislikeBtn.classList.remove('btn-outline-danger');
+            dislikeBtn.classList.add('btn-danger');
+            dislikeBtn.innerHTML = '<i class="fas fa-thumbs-down me-2"></i>Beğenmedim';
+            likeBtn.classList.remove('btn-success');
+            likeBtn.classList.add('btn-outline-success');
+            likeBtn.innerHTML = '<i class="fas fa-thumbs-up me-2"></i>Beğen';
+        } else {
+            dislikeBtn.classList.remove('btn-danger');
+            dislikeBtn.classList.add('btn-outline-danger');
+            dislikeBtn.innerHTML = '<i class="fas fa-thumbs-down me-2"></i>Beğenme';
+        }
+    });
+}
+
+function toggleFavorite(movieId) {
+    fetch(`/movies/movie/${movieId}/favorite/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        const favoriteBtn = document.getElementById('favoriteBtn');
+        if (data.is_favorite) {
+            favoriteBtn.classList.remove('btn-outline-danger');
+            favoriteBtn.classList.add('btn-danger');
+            favoriteBtn.innerHTML = '<i class="fas fa-star me-2"></i>Favorilerden Çıkar';
+        } else {
+            favoriteBtn.classList.remove('btn-danger');
+            favoriteBtn.classList.add('btn-outline-danger');
+            favoriteBtn.innerHTML = '<i class="fas fa-star me-2"></i>Favorilere Ekle';
+        }
+    });
+}
+</script>
+{% endif %}
+{% endblock %}
+

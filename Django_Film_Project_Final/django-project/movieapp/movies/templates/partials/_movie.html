@@ -1,0 +1,61 @@
+{% load static %}
+
+<div class="card h-100">
+    <div class="position-relative">
+        {% if user.is_authenticated %}
+        <button onclick="toggleFavorite({{ film.id }})" 
+                class="btn btn-link position-absolute" 
+                style="top: 10px; right: 10px; z-index: 1; padding: 0; background-color: rgba(26, 26, 46, 0.8); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+            <i class="fas fa-star fa-lg" style="color: {% if film in user.favori_filmler.all %}#e94560{% else %}#ffffff{% endif %};"></i>
+        </button>
+        {% endif %}
+        <img src="{% static 'img/'|add:film.resim %}" class="card-img-top" alt="{{ film.film_adi }}">
+        <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(transparent, rgba(26, 26, 46, 0.9));">
+            <h5 class="card-title mb-0 text-white">{{ film.film_adi }}</h5>
+        </div>
+    </div>
+    <div class="card-body d-flex flex-column">
+        <p class="card-text flex-grow-1">{{ film.aciklama|truncatechars:100 }}</p>
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <a href="{% url 'movies:movie_details' film.id %}" class="btn btn-primary">
+                <i class="fas fa-info-circle me-1"></i> Detaylar
+            </a>
+            {% if film.anasayfa %}
+            <span class="badge bg-danger">
+                <i class="fas fa-fire me-1"></i> Popüler
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<script>
+function toggleFavorite(movieId) {
+    console.log('Toggle favorite clicked for movie:', movieId);
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/movies/movie/${movieId}/favorite/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        const starBtn = event.target.closest('button').querySelector('i');
+        if (data.is_favorite) {
+            starBtn.style.color = '#e94560';
+            starBtn.classList.add('fa-bounce');
+            setTimeout(() => starBtn.classList.remove('fa-bounce'), 1000);
+        } else {
+            starBtn.style.color = '#ffffff';
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endif %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Özel Navbar -->
+    <div class="card border-0 shadow-lg bg-secondary mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <h2 class="text-light mb-0 me-4">
+                        <i class="fas fa-film text-danger me-2"></i>
+                        Filmler
+                    </h2>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'movies:favorite_movies' %}" class="btn btn-danger">
+                        <i class="fas fa-star me-2"></i>
+                        Favori Filmlerim
+                        <span class="badge bg-light text-danger ms-2">{{ user.favori_filmler.count }}</span>
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'movies:home' %}" class="btn btn-outline-light">
+                        <i class="fas fa-home me-2"></i>
+                        Ana Sayfa
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'account:profile' %}" class="btn btn-outline-light">
+                        <i class="fas fa-user me-2"></i>
+                        Profilim
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Film Listesi -->
+    <div class="row">
+        {% for film in filmler %}
+            <div class="col-md-4 mb-4">
+                {% include 'partials/_movie.html' with film=film %}
+            </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-lg bg-secondary">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-film fa-4x text-danger mb-4"></i>
+                    <h3 class="text-light mb-3">Henüz Film Bulunmuyor</h3>
+                    <p class="text-light">Film listesi yakında eklenecektir.</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.btn {
+    border-radius: 25px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.badge {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}
+
